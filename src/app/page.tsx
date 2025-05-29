@@ -34,30 +34,49 @@ export default function Portfolio() {
         </section>
 
         {/* Projects Section */}
-        <section className="space-y-6">
-          <h2 className="text-3xl font-semibold border-b-2 border-purple-400 pb-2">Projects</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="border border-purple-500 p-6 rounded-lg shadow-lg hover:scale-[1.01] transition bg-purple-900/70 backdrop-blur-md">
-              <h3 className="text-2xl font-bold text-white">TLDR</h3>
-              <p className="text-md text-purple-200 mt-2">
-                AI-powered platform for organizations to auto-generate responses to RFPs with PDF export.
-              </p>
-              <p className="text-sm text-purple-300 mt-1">Tech: Java 17, Spring Boot, PostgreSQL, Bootstrap, Fetch API</p>
-              <div className="space-x-2 pt-3">
-                <a href="http://ec2-13-53-174-58.eu-north-1.compute.amazonaws.com/" target="_blank" className="bg-pink-500 text-white px-4 py-2 rounded-full shadow hover:bg-pink-600">Live</a>
-                <a href="https://github.com/ricardoVeloso2424/RFP-AI-Response" target="_blank" className="bg-cyan-500 text-white px-4 py-2 rounded-full shadow hover:bg-cyan-600">GitHub</a>
-              </div>
-            </div>
+        <section className="space-y-8">
+          <h2 className="text-3xl font-semibold border-b-2 border-purple-400 pb-2">Featured Projects</h2>
 
-            <div className="border border-purple-500 p-6 rounded-lg shadow-lg hover:scale-[1.01] transition bg-purple-900/70 backdrop-blur-md">
-              <h3 className="text-2xl font-bold text-white">Galeria Lelo</h3>
-              <p className="text-md text-purple-200 mt-2">
-                Art gallery management system built with ASP.NET and Entity Framework for CRUD operations.
-              </p>
-              <p className="text-sm text-purple-300 mt-1">Tech: C#, .NET 8, ASP.NET MVC, SQL Server, Bootstrap</p>
-              <div className="pt-3">
-                <a href="https://github.com/ricardoVeloso2424/Galeria-Lelo" target="_blank" className="bg-cyan-500 text-white px-4 py-2 rounded-full shadow hover:bg-cyan-600">GitHub</a>
-              </div>
+          {/* TLDR Project */}
+          <div className="bg-purple-900/60 rounded-xl shadow-lg p-6 space-y-4">
+            <h3 className="text-2xl font-bold">TLDR</h3>
+            <p className="text-purple-200">
+              TLDR is an all-in-one platform tailored for organizations that handle technical and commercial proposals. It generates AI-powered responses to RFPs, creating tailored content based on each request.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {["Java", "Spring Boot", "PostgreSQL", "JavaScript", "Spring AI"].map(tag => (
+                <span key={tag} className="bg-purple-700 text-sm px-3 py-1 rounded-full text-white">{tag}</span>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+              {["/TLDR1.jpg", "/TLDR2.jpg"].map((src, i) => (
+                <img key={i} src={src} alt={`TLDR screenshot ${i + 1}`} className="rounded-xl border border-purple-700" />
+              ))}
+            </div>
+            <div className="flex gap-3 pt-3">
+              <a href="http://ec2-13-53-174-58.eu-north-1.compute.amazonaws.com/" target="_blank" className="bg-pink-500 text-white px-4 py-2 rounded-full shadow hover:bg-pink-600">Live</a>
+              <a href="https://github.com/ricardoVeloso2424/RFP-AI-Response" target="_blank" className="bg-cyan-500 text-white px-4 py-2 rounded-full shadow hover:bg-cyan-600">GitHub</a>
+            </div>
+          </div>
+
+          {/* Galeria Lelo Project */}
+          <div className="bg-purple-900/60 rounded-xl shadow-lg p-6 space-y-4">
+            <h3 className="text-2xl font-bold">Galeria Lelo</h3>
+            <p className="text-purple-200">
+              Galeria Lelo is a complete web platform designed to manage and showcase art gallery content, including artworks, artists, and exhibitions. It offers a responsive UI and dynamic backend for CRUD operations.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {["C#", ".NET 8", "Entity Framework", "SQL Server", "Bootstrap"].map(tag => (
+                <span key={tag} className="bg-purple-700 text-sm px-3 py-1 rounded-full text-white">{tag}</span>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+              {["/GALERIA1.png", "/GALERIA2.png", "/GALERIA3.png", "/GALERIA4.png", "/GALERIA5.jpg"].map((src, i) => (
+                <img key={i} src={src} alt={`Galeria screenshot ${i + 1}`} className="rounded-xl border border-purple-700" />
+              ))}
+            </div>
+            <div className="flex gap-3 pt-3">
+              <a href="https://github.com/ricardoVeloso2424/Galeria-Lelo" target="_blank" className="bg-cyan-500 text-white px-4 py-2 rounded-full shadow hover:bg-cyan-600">GitHub</a>
             </div>
           </div>
         </section>
