@@ -7,7 +7,7 @@ export default function Portfolio() {
           <img src="/A1A1A1.jpg" alt="Ricardo Veloso" className="w-40 h-40 rounded-full mx-auto shadow-xl border-4 border-purple-500" />
           <h1 className="text-5xl font-extrabold tracking-tight text-white">Ricardo Veloso</h1>
           <p className="text-2xl text-purple-300 font-medium">Full Stack Developer</p>
-          <p className="text-lg italic text-purple-400">"Think it. Code it. Push it."</p>
+          <p className="text-lg italic text-purple-400">&quot;Think it. Code it. Push it.&quot;</p>
           <div className="flex justify-center gap-4 mt-4">
             <a href="https://www.linkedin.com/in/ricardoveloso24/" target="_blank" className="bg-pink-500 text-white px-5 py-2 rounded-full shadow-lg hover:bg-pink-600">LinkedIn</a>
             <a href="https://github.com/ricardoVeloso2424" target="_blank" className="bg-cyan-500 text-white px-5 py-2 rounded-full shadow-lg hover:bg-cyan-600">GitHub</a>
