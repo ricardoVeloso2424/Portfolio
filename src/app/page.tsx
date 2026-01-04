@@ -92,12 +92,14 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
+type SectionId = "about" | "skills" | "projects" | "contact";
+
 export default function Portfolio() {
   const [isLoading, setIsLoading] = useState(true);
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll();
 
-  const [active, setActive] = useState<"about" | "skills" | "projects" | "contacts">("about");
+  const [active, setActive] = useState<SectionId>("about");
 
   const aboutRef = useRef<HTMLElement | null>(null);
   const skillsRef = useRef<HTMLElement | null>(null);
@@ -110,11 +112,13 @@ export default function Portfolio() {
   }, []);
 
   useEffect(() => {
-    const targets: Array<{ id: typeof active; el: HTMLElement | null }> = [
+    if (typeof window === "undefined") return;
+
+    const targets: Array<{ id: SectionId; el: HTMLElement | null }> = [
       { id: "about", el: aboutRef.current },
       { id: "skills", el: skillsRef.current },
       { id: "projects", el: projectsRef.current },
-      { id: "contacts", el: contactRef.current },
+      { id: "contact", el: contactRef.current },
     ];
 
     const io = new IntersectionObserver(
@@ -122,9 +126,11 @@ export default function Portfolio() {
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0))[0];
-        if (!visible?.target) return;
 
-        const found = targets.find((t) => t.el === visible.target);
+        const el = (visible?.target as HTMLElement | undefined) ?? null;
+        if (!el) return;
+
+        const found = targets.find((t) => t.el === el);
         if (found) setActive(found.id);
       },
       { root: null, threshold: [0.18, 0.25, 0.35, 0.5] }
@@ -135,12 +141,15 @@ export default function Portfolio() {
   }, []);
 
   const anim = useMemo(() => {
+    const easeOut = [0.16, 1, 0.3, 1] as const;
+
     if (reduceMotion) {
       return {
         viewport: { once: true, amount: 0.2 },
         fadeUp: { initial: {}, whileInView: {}, transition: {} },
         card: { initial: {}, whileInView: {}, transition: {} },
         stagger: {},
+        child: {},
       };
     }
 
@@ -149,12 +158,12 @@ export default function Portfolio() {
       fadeUp: {
         initial: { opacity: 0, y: 14 },
         whileInView: { opacity: 1, y: 0 },
-        transition: { duration: 0.55, ease: "easeOut" },
+        transition: { duration: 0.55, ease: easeOut },
       },
       card: {
         initial: { opacity: 0, y: 12, scale: 0.995 },
         whileInView: { opacity: 1, y: 0, scale: 1 },
-        transition: { duration: 0.5, ease: "easeOut" },
+        transition: { duration: 0.5, ease: easeOut },
       },
       stagger: {
         initial: "hidden",
@@ -167,19 +176,19 @@ export default function Portfolio() {
       child: {
         variants: {
           hidden: { opacity: 0, y: 10 },
-          show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+          show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: easeOut } },
         },
       },
     };
   }, [reduceMotion]);
 
-  function scrollTo(id: typeof active) {
-    const map = {
+  function scrollTo(id: SectionId) {
+    const map: Record<SectionId, HTMLElement | null> = {
       about: aboutRef.current,
       skills: skillsRef.current,
       projects: projectsRef.current,
       contact: contactRef.current,
-    } as const;
+    };
     map[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -215,12 +224,14 @@ export default function Portfolio() {
               </button>
 
               <nav className="flex gap-1">
-                {([
-                  ["about", "About"],
-                  ["skills", "Skills"],
-                  ["projects", "Projects"],
-                  ["contacts", "Contacts"],
-                ] as const).map(([id, label]) => (
+                {(
+                  [
+                    ["about", "About"],
+                    ["skills", "Skills"],
+                    ["projects", "Projects"],
+                    ["contact", "Contact"],
+                  ] as const
+                ).map(([id, label]) => (
                   <button
                     key={id}
                     onClick={() => scrollTo(id)}
@@ -242,7 +253,7 @@ export default function Portfolio() {
           className="rounded-3xl border border-gray-200 bg-white/70 backdrop-blur-sm p-8 sm:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.05)]"
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: "easeOut" }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
             <motion.img
@@ -306,7 +317,7 @@ export default function Portfolio() {
         </motion.section>
 
         <motion.section
-          ref={aboutRef as any}
+          ref={aboutRef}
           {...anim.fadeUp}
           viewport={anim.viewport}
           className="space-y-4 scroll-mt-24"
@@ -323,20 +334,11 @@ export default function Portfolio() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
               {[
-                {
-                  title: "Backend",
-                  text: "Java/Spring, SQL, clean data models, REST APIs.",
-                },
-                {
-                  title: "Frontend",
-                  text: "React/Next.js with TypeScript, pragmatic UI.",
-                },
-                {
-                  title: "Delivery",
-                  text: "Git workflows, production debugging, maintainability.",
-                },
+                { title: "Backend", text: "Java/Spring, SQL, clean data models, REST APIs." },
+                { title: "Frontend", text: "React/Next.js with TypeScript, pragmatic UI." },
+                { title: "Delivery", text: "Git workflows, production debugging, maintainability." },
               ].map((b) => (
-                <div key={b.title} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <div key={b.title} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                   <p className="text-sm font-semibold">{b.title}</p>
                   <p className="text-sm text-gray-700 mt-1">{b.text}</p>
                 </div>
@@ -346,7 +348,7 @@ export default function Portfolio() {
         </motion.section>
 
         <motion.section
-          ref={skillsRef as any}
+          ref={skillsRef}
           {...anim.fadeUp}
           viewport={anim.viewport}
           className="space-y-5 scroll-mt-24"
@@ -375,7 +377,7 @@ export default function Portfolio() {
         </motion.section>
 
         <motion.section
-          ref={projectsRef as any}
+          ref={projectsRef}
           {...anim.fadeUp}
           viewport={anim.viewport}
           className="space-y-8 scroll-mt-24"
@@ -417,7 +419,10 @@ export default function Portfolio() {
 
                 <div className="flex flex-wrap gap-2 pt-4">
                   {p.tags.map((t) => (
-                    <span key={t} className="px-2.5 py-1 rounded-full bg-gray-100 text-sm text-gray-700">
+                    <span
+                      key={t}
+                      className="px-2.5 py-1 rounded-full bg-gray-100 text-sm text-gray-700"
+                    >
                       {t}
                     </span>
                   ))}
@@ -442,12 +447,12 @@ export default function Portfolio() {
         </motion.section>
 
         <motion.section
-          ref={contactRef as any}
+          ref={contactRef}
           {...anim.fadeUp}
           viewport={anim.viewport}
           className="space-y-4 scroll-mt-24"
         >
-          <SectionHeader title="Contacts" />
+          <SectionHeader title="Contact" />
 
           <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
             <p className="text-gray-700">
