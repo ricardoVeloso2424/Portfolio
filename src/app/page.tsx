@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion, useScroll } from "framer-motion";
 import Image from "next/image";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { motion, useReducedMotion, useScroll } from "framer-motion";
 
 const skills = [
   "Java",
@@ -77,17 +84,36 @@ const projects = [
   },
 ];
 
+const navItems = [
+  ["about", "About"],
+  ["skills", "Skills"],
+  ["projects", "Projects"],
+  ["contact", "Contact"],
+] as const;
+
+type SectionId = "about" | "skills" | "projects" | "contact";
+type Project = (typeof projects)[number];
+
+const EASE_PREMIUM = [0.16, 1, 0.3, 1] as const;
+const DURATION_HOVER = 0.3;
+const DURATION_REVEAL = 0.56;
+const DURATION_HERO = 0.82;
+
+const TRANSITION_HOVER = { duration: DURATION_HOVER, ease: EASE_PREMIUM };
+const TRANSITION_REVEAL = { duration: DURATION_REVEAL, ease: EASE_PREMIUM };
+const TRANSITION_HERO = { duration: DURATION_HERO, ease: EASE_PREMIUM };
+
 function ExternalLink({
   href,
   children,
   className,
 }: {
   href: string;
-  children: React.ReactNode;
+  children: ReactNode;
   className: string;
 }) {
   return (
-    <a href={href} target="_blank" rel="noreferrer" className={className}>
+    <a href={href} target="_blank" rel="noreferrer noopener" className={className}>
       {children}
     </a>
   );
@@ -95,17 +121,133 @@ function ExternalLink({
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="flex items-end justify-between gap-4">
-      <h2 className="text-2xl font-semibold">{title}</h2>
-      <div className="hidden sm:block h-px flex-1 bg-gray-200 mb-2" />
+    <div className="flex items-center gap-4">
+      <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h2>
+      <div className="h-px flex-1 bg-gradient-to-r from-slate-300 via-slate-200 to-transparent" />
     </div>
   );
 }
 
-type SectionId = "about" | "skills" | "projects" | "contact";
+const ProjectCard = memo(function ProjectCard({
+  project,
+  motionReduced,
+}: {
+  project: Project;
+  motionReduced: boolean;
+}) {
+  const cardHoverClass = motionReduced
+    ? ""
+    : "transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:scale-[1.006]";
+
+  const revealMotion = motionReduced
+    ? {}
+    : {
+        initial: { opacity: 0, y: 18, scale: 0.995 },
+        whileInView: { opacity: 1, y: 0, scale: 1 },
+        transition: TRANSITION_REVEAL,
+        viewport: { once: true, amount: 0.23 },
+      };
+
+  return (
+    <motion.div
+      {...revealMotion}
+      className={`group relative overflow-hidden rounded-[1.85rem] border border-white/85 bg-white/80 p-6 shadow-[0_30px_90px_-45px_rgba(15,23,42,0.6)] backdrop-blur-sm sm:p-7 ${cardHoverClass}`}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-400/10 via-transparent to-emerald-400/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute left-7 right-7 top-0 h-px bg-gradient-to-r from-transparent via-sky-400/50 to-transparent" />
+
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <h3 className="text-xl font-semibold tracking-tight text-slate-900">{project.title}</h3>
+          <p className="max-w-3xl leading-relaxed text-slate-700">{project.description}</p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {project.links.map((link) => (
+            <ExternalLink
+              key={link.href}
+              href={link.href}
+              className={
+                link.primary
+                  ? "group/link inline-flex items-center gap-2 rounded-xl border border-slate-900 bg-slate-900 px-3.5 py-1.5 text-sm font-medium text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
+                  : "group/link inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-800 shadow-[0_10px_25px_-18px_rgba(15,23,42,0.8)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
+              }
+            >
+              <span>{link.label}</span>
+              <span
+                aria-hidden
+                className={
+                  motionReduced
+                    ? ""
+                    : "transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/link:translate-x-0.5"
+                }
+              >
+                -&gt;
+              </span>
+            </ExternalLink>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative flex flex-wrap gap-2 pt-4">
+        {project.tags.map((tag) => (
+          <span
+            key={tag}
+            className={
+              motionReduced
+                ? "rounded-full border border-slate-200 bg-slate-50/90 px-2.5 py-1 text-sm text-slate-700"
+                : "rounded-full border border-slate-200 bg-slate-50/90 px-2.5 py-1 text-sm text-slate-700 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
+            }
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      <div className="relative grid grid-cols-1 gap-4 pt-5 sm:grid-cols-2">
+        {project.images.map((src) => (
+          <div
+            key={src}
+            className={
+              motionReduced
+                ? "group/image relative aspect-video overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50/90 p-2"
+                : "group/image relative aspect-video overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50/90 p-2 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.006]"
+            }
+          >
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-sky-500/0 via-sky-500/10 to-emerald-500/20 opacity-0 transition-opacity duration-300 group-hover/image:opacity-100" />
+            <div
+              className={
+                motionReduced
+                  ? "pointer-events-none absolute inset-0 rounded-2xl opacity-0"
+                  : "pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/45 to-white/0 opacity-0 -translate-x-[115%] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/image:translate-x-[125%] group-hover/image:opacity-80"
+              }
+            />
+
+            <div
+              className={
+                motionReduced
+                  ? "relative h-full w-full overflow-hidden rounded-xl border border-slate-100 bg-white/95"
+                  : "relative h-full w-full overflow-hidden rounded-xl border border-slate-100 bg-white/95 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/image:scale-[1.015]"
+              }
+            >
+              <Image
+                src={src}
+                alt={`${project.title} screenshot`}
+                fill
+                sizes="(max-width: 640px) 100vw, 50vw"
+                className="object-contain"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+});
 
 export default function Portfolio() {
-  const reduceMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotion();
+  const motionReduced = Boolean(prefersReducedMotion);
   const { scrollYProgress } = useScroll();
 
   const [active, setActive] = useState<SectionId>("about");
@@ -128,179 +270,231 @@ export default function Portfolio() {
     const io = new IntersectionObserver(
       (entries) => {
         const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0))[0];
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
 
-        const el = (visible?.target as HTMLElement | undefined) ?? null;
-        if (!el) return;
+        if (!visible) return;
 
-        const found = targets.find((t) => t.el === el);
-        if (found) setActive(found.id);
+        const found = targets.find((target) => target.el === visible.target);
+        if (found) {
+          setActive((current) => (current === found.id ? current : found.id));
+        }
       },
-      { root: null, threshold: [0.18, 0.25, 0.35, 0.5] }
+      { root: null, threshold: [0.2, 0.33, 0.5], rootMargin: "-12% 0px -45% 0px" }
     );
 
-    targets.forEach((t) => t.el && io.observe(t.el));
+    targets.forEach((target) => target.el && io.observe(target.el));
     return () => io.disconnect();
   }, []);
 
-  const anim = useMemo(() => {
-    const easeOut = [0.16, 1, 0.3, 1] as const;
-
-    if (reduceMotion) {
-      return {
-        viewport: { once: true, amount: 0.2 },
-        fadeUp: { initial: {}, whileInView: {}, transition: {} },
-        card: { initial: {}, whileInView: {}, transition: {} },
-        stagger: {},
-        child: {},
+  const revealMotion = motionReduced
+    ? {}
+    : {
+        initial: {
+          opacity: 0,
+          y: 16,
+          scale: 0.996,
+        },
+        whileInView: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+        },
+        transition: TRANSITION_REVEAL,
+        viewport: { once: true, amount: 0.24 },
       };
-    }
 
-    return {
-      viewport: { once: true, amount: 0.25 },
-      fadeUp: {
-        initial: { opacity: 0, y: 14 },
-        whileInView: { opacity: 1, y: 0 },
-        transition: { duration: 0.55, ease: easeOut },
-      },
-      card: {
-        initial: { opacity: 0, y: 12, scale: 0.995 },
-        whileInView: { opacity: 1, y: 0, scale: 1 },
-        transition: { duration: 0.5, ease: easeOut },
-      },
-      stagger: {
-        initial: "hidden",
-        whileInView: "show",
-        variants: {
-          hidden: {},
-          show: { transition: { staggerChildren: 0.06 } },
-        },
-      },
-      child: {
-        variants: {
-          hidden: { opacity: 0, y: 10 },
-          show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: easeOut } },
-        },
-      },
-    };
-  }, [reduceMotion]);
+  const heroLeftMotion = motionReduced
+    ? {}
+    : {
+        initial: { opacity: 0, y: 14, scale: 0.995 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        transition: TRANSITION_HERO,
+      };
 
-  function scrollTo(id: SectionId) {
+  const heroRightMotion = motionReduced
+    ? {}
+    : {
+        initial: { opacity: 0, y: 18, scale: 0.99 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        transition: { ...TRANSITION_HERO, delay: 0.1 },
+      };
+
+  const scrollTo = useCallback((id: SectionId) => {
     const map: Record<SectionId, HTMLElement | null> = {
       about: aboutRef.current,
       skills: skillsRef.current,
       projects: projectsRef.current,
       contact: contactRef.current,
     };
+
     map[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  }, []);
 
   return (
-    <main className="min-h-screen bg-[#f6f7fb] text-gray-900">
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-200/40 blur-3xl" />
-        <div className="absolute top-24 -right-24 h-72 w-72 rounded-full bg-sky-200/40 blur-3xl" />
+    <main className="relative min-h-screen overflow-x-clip text-slate-900">
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(1200px_700px_at_15%_-5%,rgba(14,165,233,0.18),transparent_55%),radial-gradient(900px_520px_at_85%_0%,rgba(16,185,129,0.16),transparent_55%),linear-gradient(180deg,#f9fbff_0%,#edf2f9_42%,#eaf0f8_100%)]" />
+        <div className="absolute -top-36 -left-24 h-[30rem] w-[30rem] rounded-full bg-cyan-400/20 blur-3xl" />
+        <div className="absolute top-[10%] -right-24 h-[27rem] w-[27rem] rounded-full bg-emerald-400/20 blur-3xl" />
+        <div className="absolute bottom-[-16%] left-[20%] h-[24rem] w-[24rem] rounded-full bg-sky-300/16 blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(148,163,184,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.06)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_80%)]" />
       </div>
 
       <motion.div
         style={{ scaleX: scrollYProgress, transformOrigin: "0%" }}
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-sky-500 z-50"
+        className="fixed left-0 right-0 top-0 z-[70] h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500"
       />
 
-      <div className="relative max-w-5xl mx-auto px-6 py-8 sm:py-10 space-y-10">
-        <div className="sticky top-3 z-40">
-          <div className="rounded-2xl border border-gray-200 bg-white/75 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.05)] px-4 py-3">
+      <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-8 sm:px-8 sm:pt-10">
+        <header className="sticky top-4 z-50 mb-8">
+          <div className="rounded-2xl border border-white/80 bg-white/65 px-3 py-2.5 backdrop-blur-xl shadow-[0_20px_70px_-32px_rgba(15,23,42,0.5)]">
             <div className="flex items-center justify-between gap-3">
               <button
                 onClick={() => scrollTo("about")}
-                className="text-sm font-semibold tracking-tight hover:opacity-80"
+                className="rounded-xl px-3 py-2 text-sm font-semibold tracking-tight text-slate-800 transition hover:bg-slate-100/70"
               >
                 Ricardo Veloso
               </button>
 
-              <nav className="flex gap-1">
-                {(
-                  [
-                    ["about", "About"],
-                    ["skills", "Skills"],
-                    ["projects", "Projects"],
-                    ["contact", "Contact"],
-                  ] as const
-                ).map(([id, label]) => (
+              <nav className="flex flex-wrap items-center gap-1">
+                {navItems.map(([id, label]) => (
                   <button
                     key={id}
                     onClick={() => scrollTo(id)}
                     className={
-                      active === id
-                        ? "px-3 py-1.5 rounded-xl text-sm bg-gray-100 border border-gray-200"
-                        : "px-3 py-1.5 rounded-xl text-sm hover:bg-gray-50 border border-transparent"
+                      motionReduced
+                        ? "group relative rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-900"
+                        : "group relative rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99] hover:text-slate-900"
                     }
                   >
-                    {label}
+                    <span className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-r from-sky-100/60 via-white/80 to-emerald-100/60 opacity-0 transition-opacity duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-90" />
+                    {active === id && (
+                      <>
+                        <motion.span
+                          layoutId="active-nav-pill"
+                          className="absolute inset-0 rounded-xl border border-slate-200 bg-white/90 shadow-[0_8px_20px_-15px_rgba(15,23,42,0.65)]"
+                          transition={motionReduced ? {} : TRANSITION_HOVER}
+                        />
+                        <motion.span
+                          layoutId="active-nav-underline"
+                          className="absolute bottom-1 left-1/2 h-0.5 w-7 -translate-x-1/2 rounded-full bg-gradient-to-r from-sky-500 to-emerald-500"
+                          transition={motionReduced ? {} : TRANSITION_HOVER}
+                        />
+                      </>
+                    )}
+                    <span
+                      className={`relative z-10 ${
+                        active === id ? "scale-[1.02]" : ""
+                      } transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]`}
+                    >
+                      {label}
+                    </span>
                   </button>
                 ))}
               </nav>
             </div>
           </div>
-        </div>
+        </header>
 
         <motion.section
-          className="rounded-3xl border border-gray-200 bg-white/70 backdrop-blur-sm p-8 sm:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.05)]"
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          initial={motionReduced ? false : { opacity: 0, y: 22, scale: 0.992 }}
+          animate={motionReduced ? {} : { opacity: 1, y: 0, scale: 1 }}
+          transition={motionReduced ? {} : TRANSITION_HERO}
+          className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-white/70 p-8 shadow-[0_35px_120px_-45px_rgba(15,23,42,0.55)] backdrop-blur-xl sm:p-10"
         >
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
-            <motion.div
-              className="relative w-32 h-32 rounded-2xl overflow-hidden border border-gray-200 shadow-sm"
-              whileHover={reduceMotion ? undefined : { scale: 1.02, rotate: -0.2 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Image
-                src="/A1A1A1.png"
-                alt="Ricardo Veloso"
-                fill
-                sizes="128px"
-                className="object-cover"
-                priority
-              />
-            </motion.div>
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_42%),radial-gradient(circle_at_82%_20%,rgba(52,211,153,0.16),transparent_38%)]" />
 
-            <div className="space-y-5 text-center sm:text-left">
-              <div className="space-y-2">
-                <h1 className="text-4xl font-semibold tracking-tight">Ricardo Veloso</h1>
-                <p className="text-xl text-gray-600">Full Stack Developer</p>
-                <p className="text-gray-700 max-w-2xl">
-                  Backend-focused full-stack developer building maintainable web applications.
-                  Experience with Java/Spring, SQL and modern React/Next.js frontends.
-                </p>
-              </div>
+          <div className="relative grid items-center gap-10 lg:grid-cols-[1.25fr_0.75fr]">
+            <motion.div {...heroLeftMotion}>
+              <span className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/85 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
+                Software Developer at LKCOM
+              </span>
 
-              <div className="flex flex-wrap justify-center sm:justify-start gap-3 pt-1">
+              <h1 className="mt-5 text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                Ricardo{" "}
+                <span className="bg-gradient-to-r from-slate-900 via-sky-800 to-emerald-700 bg-clip-text text-transparent">
+                  Veloso
+                </span>
+              </h1>
+
+              <div className="mt-5 h-px w-full max-w-sm origin-left bg-gradient-to-r from-sky-500/80 via-emerald-500/35 to-transparent" />
+
+              <p className="mt-4 text-xl text-slate-600">
+                Full Stack Developer
+              </p>
+
+              <p className="mt-5 max-w-2xl text-[1.03rem] leading-relaxed text-slate-600">
+                Backend-focused full-stack developer building maintainable web applications.
+                Experience with Java/Spring, SQL and modern React/Next.js frontends.
+              </p>
+
+              <div className="mt-7 flex flex-wrap gap-3">
                 <ExternalLink
                   href="https://www.linkedin.com/in/ricardoveloso24/"
-                  className="px-4 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 transition shadow-sm"
+                  className={
+                    motionReduced
+                      ? "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)]"
+                      : "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
+                  }
                 >
-                  LinkedIn
+                  <span>LinkedIn</span>
+                  <span
+                    aria-hidden
+                    className={
+                      motionReduced
+                        ? ""
+                        : "transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/cta:translate-x-1"
+                    }
+                  >
+                    -&gt;
+                  </span>
                 </ExternalLink>
 
                 <ExternalLink
                   href="https://github.com/ricardoVeloso2424"
-                  className="px-4 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 transition shadow-sm"
+                  className={
+                    motionReduced
+                      ? "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)]"
+                      : "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
+                  }
                 >
-                  GitHub
+                  <span>GitHub</span>
+                  <span
+                    aria-hidden
+                    className={
+                      motionReduced
+                        ? ""
+                        : "transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/cta:translate-x-1"
+                    }
+                  >
+                    -&gt;
+                  </span>
                 </ExternalLink>
 
                 <ExternalLink
                   href="/CVRicardoVeloso.pdf"
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-sky-500 text-white hover:from-indigo-600 hover:to-sky-600 transition shadow-sm"
+                  className={
+                    motionReduced
+                      ? "group/cta inline-flex items-center gap-2 rounded-xl border border-sky-700 bg-sky-700 px-4 py-2.5 text-sm font-medium text-white shadow-[0_18px_34px_-22px_rgba(15,23,42,0.8)]"
+                      : "group/cta inline-flex items-center gap-2 rounded-xl border border-sky-700 bg-sky-700 px-4 py-2.5 text-sm font-medium text-white shadow-[0_18px_34px_-22px_rgba(15,23,42,0.8)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
+                  }
                 >
-                  Resume
+                  <span>Resume</span>
+                  <span
+                    aria-hidden
+                    className={
+                      motionReduced
+                        ? ""
+                        : "transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/cta:translate-x-1"
+                    }
+                  >
+                    -&gt;
+                  </span>
                 </ExternalLink>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {[
                   { k: "Currently", v: "LKCOM (Laravel + Livewire CMS)" },
                   { k: "Focus", v: "Backend + clean architecture" },
@@ -308,26 +502,51 @@ export default function Portfolio() {
                 ].map((x) => (
                   <div
                     key={x.k}
-                    className="rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm"
+                    className={
+                      motionReduced
+                        ? "rounded-2xl border border-white/90 bg-white/90 p-4 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.65)]"
+                        : "rounded-2xl border border-white/90 bg-white/90 p-4 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.65)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
+                    }
                   >
-                    <p className="text-xs text-gray-500">{x.k}</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-1">{x.v}</p>
+                    <p className="text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-slate-500">{x.k}</p>
+                    <p className="mt-1.5 text-sm font-semibold text-slate-900">{x.v}</p>
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
+
+            <motion.div
+              {...heroRightMotion}
+              className="relative mx-auto w-full max-w-[20rem]"
+            >
+              <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-sky-300/40 via-cyan-300/20 to-emerald-300/30 blur-2xl" />
+
+              <div className="relative overflow-hidden rounded-[2rem] border border-white/85 bg-white/80 p-4 shadow-[0_35px_85px_-40px_rgba(15,23,42,0.75)] backdrop-blur-xl">
+                <div className="relative aspect-square overflow-hidden rounded-[1.4rem] border border-slate-200/70 bg-slate-100">
+                  <Image
+                    src="/A1A1A1.png"
+                    alt="Ricardo Veloso"
+                    fill
+                    sizes="(max-width: 1024px) 320px, 360px"
+                    className="object-cover"
+                    priority
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.4),transparent_35%,rgba(15,23,42,0.15))]" />
+                </div>
+              </div>
+            </motion.div>
           </div>
         </motion.section>
 
         <motion.section
           ref={aboutRef}
-          {...anim.fadeUp}
-          viewport={anim.viewport}
-          className="space-y-4 scroll-mt-24"
+          {...revealMotion}
+          className="mt-10 space-y-4 scroll-mt-28"
         >
           <SectionHeader title="About" />
-          <div className="rounded-3xl border border-gray-200 bg-white p-6 sm:p-7 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
-            <p className="text-gray-700 leading-relaxed max-w-3xl">
+
+          <div className="rounded-[1.8rem] border border-white/85 bg-white/78 p-6 shadow-[0_25px_70px_-35px_rgba(15,23,42,0.55)] backdrop-blur-sm sm:p-7">
+            <p className="max-w-3xl text-[1.01rem] leading-relaxed text-slate-700">
               Full Stack Developer with hands-on experience in building web applications across backend and frontend.
               Completed the Code for All_ Full-Stack Bootcamp and currently working as a Software Developer at LKCOM,
               contributing to a modular Laravel + Livewire CMS used in production. Strong background in Java,
@@ -335,15 +554,22 @@ export default function Portfolio() {
               Informatics Engineering.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 { title: "Backend", text: "Java/Spring, SQL, clean data models, REST APIs." },
                 { title: "Frontend", text: "React/Next.js with TypeScript, pragmatic UI." },
                 { title: "Delivery", text: "Git workflows, production debugging, maintainability." },
               ].map((b) => (
-                <div key={b.title} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                  <p className="text-sm font-semibold">{b.title}</p>
-                  <p className="text-sm text-gray-700 mt-1">{b.text}</p>
+                <div
+                  key={b.title}
+                  className={
+                    motionReduced
+                      ? "rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.6)]"
+                      : "rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.6)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
+                  }
+                >
+                  <p className="text-sm font-semibold text-slate-900">{b.title}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{b.text}</p>
                 </div>
               ))}
             </div>
@@ -352,145 +578,77 @@ export default function Portfolio() {
 
         <motion.section
           ref={skillsRef}
-          {...anim.fadeUp}
-          viewport={anim.viewport}
-          className="space-y-5 scroll-mt-24"
+          {...revealMotion}
+          className="mt-10 space-y-5 scroll-mt-28"
         >
           <SectionHeader title="Skills" />
 
-          <motion.div
-            {...(reduceMotion ? {} : anim.stagger)}
-            viewport={anim.viewport}
-            className="rounded-3xl border border-gray-200 bg-white p-6 sm:p-7 shadow-[0_10px_30px_rgba(0,0,0,0.05)]"
-          >
-            <div className="flex flex-wrap gap-2">
-              {skills.map((s) => (
-                <motion.span
-                  key={s}
-                  {...(reduceMotion ? {} : anim.child)}
-                  className="px-3 py-1 rounded-full border border-gray-300 bg-white text-sm text-gray-700 shadow-sm"
-                  whileHover={reduceMotion ? undefined : { y: -2, scale: 1.01 }}
-                  transition={{ duration: 0.18 }}
+          <div className="rounded-[1.8rem] border border-white/85 bg-white/78 p-6 shadow-[0_25px_70px_-35px_rgba(15,23,42,0.55)] backdrop-blur-sm sm:p-7">
+            <div className="flex flex-wrap gap-2.5">
+              {skills.map((skill) => (
+                <span
+                  key={skill}
+                  className={
+                    motionReduced
+                      ? "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-700 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.65)]"
+                      : "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-700 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.65)] transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
+                  }
                 >
-                  {s}
-                </motion.span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-sky-500 to-emerald-500" />
+                  {skill}
+                </span>
               ))}
             </div>
-          </motion.div>
+          </div>
         </motion.section>
 
         <motion.section
           ref={projectsRef}
-          {...anim.fadeUp}
-          viewport={anim.viewport}
-          className="space-y-8 scroll-mt-24"
+          {...revealMotion}
+          className="mt-10 space-y-8 scroll-mt-28"
         >
           <SectionHeader title="Projects" />
 
           <div className="space-y-6">
-            {projects.map((p) => (
-              <motion.article
-                key={p.title}
-                {...anim.card}
-                viewport={anim.viewport}
-                className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-7 shadow-[0_10px_30px_rgba(0,0,0,0.05)]"
-                whileHover={reduceMotion ? undefined : { y: -3 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">{p.title}</h3>
-                    <p className="text-gray-700 max-w-3xl">{p.description}</p>
-                  </div>
-
-                  <div className="flex gap-2 flex-wrap">
-                    {p.links.map((l) => (
-                      <ExternalLink
-                        key={l.href}
-                        href={l.href}
-                        className={
-                          l.primary
-                            ? "px-3 py-1.5 rounded-xl text-sm bg-indigo-500 text-white hover:bg-indigo-600 transition shadow-sm"
-                            : "px-3 py-1.5 rounded-xl text-sm border border-gray-300 bg-white hover:bg-gray-50 transition shadow-sm"
-                        }
-                      >
-                        {l.label}
-                      </ExternalLink>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2 pt-4">
-                  {p.tags.map((t) => (
-                    <span
-                      key={t}
-                      className="px-2.5 py-1 rounded-full bg-gray-100 text-sm text-gray-700"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-5">
-                  {p.images.map((src) => (
-                    <div
-                      key={src}
-                      className="relative aspect-video rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center p-2"
-                    >
-                      <motion.div
-                        className="relative h-full w-full"
-                        whileHover={reduceMotion ? undefined : { scale: 1.015 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Image
-                          src={src}
-                          alt={`${p.title} screenshot`}
-                          fill
-                          sizes="(max-width: 640px) 100vw, 50vw"
-                          className="object-contain"
-                        />
-                      </motion.div>
-                    </div>
-                  ))}
-                </div>
-              </motion.article>
+            {projects.map((project) => (
+              <ProjectCard key={project.title} project={project} motionReduced={motionReduced} />
             ))}
           </div>
         </motion.section>
 
         <motion.section
           ref={contactRef}
-          {...anim.fadeUp}
-          viewport={anim.viewport}
-          className="space-y-4 scroll-mt-24"
+          {...revealMotion}
+          className="mt-10 space-y-4 scroll-mt-28"
         >
           <SectionHeader title="Contact" />
 
-          <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
-            <p className="text-gray-700">
-              Email:{" "}
-              <a
-                href="mailto:cfaricardov@hotmail.com"
-                className="underline underline-offset-4 hover:text-gray-900"
-              >
-                cfaricardov@hotmail.com
-              </a>
-            </p>
-            <p className="text-gray-700 mt-2">
-              Phone:{" "}
-              <a
-                href="tel:+351960125103"
-                className="underline underline-offset-4 hover:text-gray-900"
-              >
-                +351 960 125 103
-              </a>
-            </p>
+          <div className="rounded-[1.8rem] border border-white/85 bg-white/80 p-6 shadow-[0_30px_80px_-42px_rgba(15,23,42,0.65)] backdrop-blur-sm">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <p className="text-slate-700">
+                Email:{" "}
+                <a
+                  href="mailto:cfaricardov@hotmail.com"
+                  className="font-medium underline decoration-slate-300 underline-offset-4 transition hover:text-slate-900"
+                >
+                  cfaricardov@hotmail.com
+                </a>
+              </p>
+
+              <p className="text-slate-700 sm:text-right">
+                Phone:{" "}
+                <a
+                  href="tel:+351960125103"
+                  className="font-medium underline decoration-slate-300 underline-offset-4 transition hover:text-slate-900"
+                >
+                  +351 960 125 103
+                </a>
+              </p>
+            </div>
           </div>
         </motion.section>
 
-        <footer className="pt-8 border-t border-gray-200 text-sm text-gray-500">
-          Ricardo Veloso
-        </footer>
+        <footer className="mt-10 border-t border-slate-200/80 pt-7 text-sm text-slate-500">Ricardo Veloso</footer>
       </div>
     </main>
   );
