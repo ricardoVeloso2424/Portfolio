@@ -19,6 +19,20 @@ const skills = [
 
 const projects = [
   {
+    title: "Maquiveloso",
+    description:
+      "Full-stack web platform developed for a sewing machine repair and sales business. The project includes a public-facing website with product catalog and service information, and a custom back-office CMS built with Laravel to manage products, pages and content dynamically. The system supports database-driven content, modular page sections and a clean admin interface designed for non-technical users.",
+    tags: ["Laravel", "Livewire", "Tailwind CSS", "Blade", "MySQL", "JavaScript"],
+    images: ["/maquiveloso-frontend.png", "/maquiveloso-backoffice.png"],
+    links: [
+      {
+        label: "GitHub",
+        href: "PUT_REPOSITORY_LINK_HERE",
+        primary: false,
+      },
+    ],
+  },
+  {
     title: "TLDR",
     description:
       "AI-assisted platform that generates tailored responses to RFPs, producing structured and relevant content.",
@@ -430,15 +444,19 @@ export default function Portfolio() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-5">
                   {p.images.map((src) => (
-                    <motion.img
+                    <div
                       key={src}
-                      src={src}
-                      alt={`${p.title} screenshot`}
-                      className="rounded-2xl border border-gray-200 object-cover w-full"
-                      whileHover={reduceMotion ? undefined : { scale: 1.015 }}
-                      transition={{ duration: 0.2 }}
-                      loading="lazy"
-                    />
+                      className="aspect-video rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center p-2"
+                    >
+                      <motion.img
+                        src={src}
+                        alt={`${p.title} screenshot`}
+                        className="w-full h-full object-contain"
+                        whileHover={reduceMotion ? undefined : { scale: 1.015 }}
+                        transition={{ duration: 0.2 }}
+                        loading="lazy"
+                      />
+                    </div>
                   ))}
                 </div>
               </motion.article>
@@ -469,7 +487,7 @@ export default function Portfolio() {
         </motion.section>
 
         <footer className="pt-8 border-t border-gray-200 text-sm text-gray-500">
-          {new Date().getFullYear()} Ricardo Veloso
+          Ricardo Veloso
         </footer>
       </div>
     </main>
