@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll } from "framer-motion";
+import Image from "next/image";
 
 const skills = [
   "Java",
@@ -21,7 +22,7 @@ const projects = [
   {
     title: "Maquiveloso",
     description:
-      "Full-stack web platform developed for a sewing machine repair and sales business. The project includes a public-facing website with product catalog and service information, and a custom back-office CMS built with Laravel to manage products, pages and content dynamically. The system supports database-driven content, modular page sections and a clean admin interface designed for non-technical users.",
+      "Full-stack Laravel platform for a sewing machine repair and sales business. Implemented a public product catalog and a custom CMS back office enabling dynamic management of products and pages by non-technical users.",
     tags: ["Laravel", "Livewire", "Tailwind CSS", "Blade", "MySQL", "JavaScript"],
     images: ["/maquiveloso-frontend.png", "/maquiveloso-backoffice.png"],
     links: [
@@ -35,7 +36,7 @@ const projects = [
   {
     title: "TLDR",
     description:
-      "AI-assisted platform that generates tailored responses to RFPs, producing structured and relevant content.",
+      "Spring Boot platform that assists RFP response drafting by generating structured proposal content from business input. Includes REST APIs, PostgreSQL persistence, and AI integration to produce editable outputs for proposal workflows.",
     tags: ["Java", "Spring Boot", "PostgreSQL", "Spring AI"],
     images: ["/TLDR1.jpg", "/TLDR2.jpg"],
     links: [
@@ -49,7 +50,7 @@ const projects = [
   {
     title: "Galeria Lelo",
     description:
-      "Web platform to manage and showcase gallery content, including artworks, artists and exhibitions.",
+      ".NET 8 web platform for managing gallery operations and public content across artworks, artists, and exhibitions. Implements Entity Framework data models and admin workflows for reliable catalog updates.",
     tags: ["C#", ".NET 8", "Entity Framework", "SQL Server"],
     images: ["/GALERIA1.png", "/GALERIA2.png"],
     links: [
@@ -63,7 +64,7 @@ const projects = [
   {
     title: "Conversor",
     description:
-      "Cross-platform desktop application to convert images and videos with presets for resolution, aspect ratio and quality.",
+      "Python desktop application for converting image and video assets with reusable presets for resolution, aspect ratio, and quality. Integrates FFmpeg processing with a Tkinter UI and PyInstaller packaging for desktop distribution.",
     tags: ["Python", "Tkinter", "FFmpeg", "imageio-ffmpeg", "Pillow", "PyInstaller"],
     images: ["/conversor.png"],
     links: [
@@ -104,7 +105,6 @@ function SectionHeader({ title }: { title: string }) {
 type SectionId = "about" | "skills" | "projects" | "contact";
 
 export default function Portfolio() {
-  const [isLoading, setIsLoading] = useState(true);
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll();
 
@@ -114,11 +114,6 @@ export default function Portfolio() {
   const skillsRef = useRef<HTMLElement | null>(null);
   const projectsRef = useRef<HTMLElement | null>(null);
   const contactRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 450);
-    return () => clearTimeout(t);
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -201,14 +196,6 @@ export default function Portfolio() {
     map[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f6f7fb]">
-        <div className="w-10 h-10 rounded-full border-4 border-gray-300 border-t-gray-600 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-[#f6f7fb] text-gray-900">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
@@ -265,13 +252,20 @@ export default function Portfolio() {
           transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
-            <motion.img
-              src="/A1A1A1.png"
-              alt="Ricardo Veloso"
-              className="w-32 h-32 rounded-2xl object-cover border border-gray-200 shadow-sm"
+            <motion.div
+              className="relative w-32 h-32 rounded-2xl overflow-hidden border border-gray-200 shadow-sm"
               whileHover={reduceMotion ? undefined : { scale: 1.02, rotate: -0.2 }}
               transition={{ duration: 0.2 }}
-            />
+            >
+              <Image
+                src="/A1A1A1.png"
+                alt="Ricardo Veloso"
+                fill
+                sizes="128px"
+                className="object-cover"
+                priority
+              />
+            </motion.div>
 
             <div className="space-y-5 text-center sm:text-left">
               <div className="space-y-2">
@@ -441,16 +435,21 @@ export default function Portfolio() {
                   {p.images.map((src) => (
                     <div
                       key={src}
-                      className="aspect-video rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center p-2"
+                      className="relative aspect-video rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center p-2"
                     >
-                      <motion.img
-                        src={src}
-                        alt={`${p.title} screenshot`}
-                        className="w-full h-full object-contain"
+                      <motion.div
+                        className="relative h-full w-full"
                         whileHover={reduceMotion ? undefined : { scale: 1.015 }}
                         transition={{ duration: 0.2 }}
-                        loading="lazy"
-                      />
+                      >
+                        <Image
+                          src={src}
+                          alt={`${p.title} screenshot`}
+                          fill
+                          sizes="(max-width: 640px) 100vw, 50vw"
+                          className="object-contain"
+                        />
+                      </motion.div>
                     </div>
                   ))}
                 </div>
@@ -477,7 +476,15 @@ export default function Portfolio() {
                 cfaricardov@hotmail.com
               </a>
             </p>
-            <p className="text-gray-700 mt-2">Phone: 960125103</p>
+            <p className="text-gray-700 mt-2">
+              Phone:{" "}
+              <a
+                href="tel:+351960125103"
+                className="underline underline-offset-4 hover:text-gray-900"
+              >
+                +351 960 125 103
+              </a>
+            </p>
           </div>
         </motion.section>
 

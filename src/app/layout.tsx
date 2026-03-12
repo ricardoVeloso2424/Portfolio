@@ -12,11 +12,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Ricardo Veloso — Full Stack Developer",
-  description: "Full Stack Developer focused on building clean, reliable web applications.",
-};
+const metadataTitle = "Ricardo Veloso - Full Stack Developer";
+const metadataDescription =
+  "Full Stack Developer focused on building clean, reliable web applications.";
 
+export const metadata: Metadata = {
+  title: metadataTitle,
+  description: metadataDescription,
+  openGraph: {
+    title: metadataTitle,
+    description: metadataDescription,
+  },
+};
 
 export default function RootLayout({
   children,
@@ -25,9 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>
