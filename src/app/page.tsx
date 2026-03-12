@@ -2,248 +2,21 @@
 
 import Image from "next/image";
 import {
-  memo,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type ReactNode,
+  type ComponentProps,
 } from "react";
 import { motion, useReducedMotion, useScroll } from "framer-motion";
+import AboutSection from "@/components/portfolio/AboutSection";
+import ContactSection from "@/components/portfolio/ContactSection";
+import ProjectsSection from "@/components/portfolio/ProjectsSection";
+import SkillsSection from "@/components/portfolio/SkillsSection";
+import { navItems, projects, skills, type SectionId } from "@/data/portfolio";
+import { TRANSITION_HERO, TRANSITION_HOVER, TRANSITION_REVEAL } from "@/lib/motion";
 
-const skills = [
-  "Java",
-  "JavaScript",
-  "TypeScript",
-  "SQL",
-  "React",
-  "Next.js",
-  "Spring",
-  "Laravel",
-  "REST APIs",
-  "Git",
-  "Python",
-];
-
-const projects = [
-  {
-    title: "Maquiveloso",
-    description:
-      "Full-stack Laravel platform for a sewing machine repair and sales business. Implemented a public product catalog and a custom CMS back office enabling dynamic management of products and pages by non-technical users.",
-    tags: ["Laravel", "Livewire", "Tailwind CSS", "Blade", "MySQL", "JavaScript"],
-    images: ["/maquiveloso-frontend.png", "/maquiveloso-backoffice.png"],
-    links: [
-      {
-        label: "GitHub",
-        href: "https://github.com/ricardoVeloso2424/maquivelosoV2",
-        primary: false,
-      },
-    ],
-  },
-  {
-    title: "TLDR",
-    description:
-      "Spring Boot platform that assists RFP response drafting by generating structured proposal content from business input. Includes REST APIs, PostgreSQL persistence, and AI integration to produce editable outputs for proposal workflows.",
-    tags: ["Java", "Spring Boot", "PostgreSQL", "Spring AI"],
-    images: ["/TLDR1.jpg", "/TLDR2.jpg"],
-    links: [
-      {
-        label: "GitHub",
-        href: "https://github.com/ricardoVeloso2424/RFP-AI-Response",
-        primary: false,
-      },
-    ],
-  },
-  {
-    title: "Galeria Lelo",
-    description:
-      ".NET 8 web platform for managing gallery operations and public content across artworks, artists, and exhibitions. Implements Entity Framework data models and admin workflows for reliable catalog updates.",
-    tags: ["C#", ".NET 8", "Entity Framework", "SQL Server"],
-    images: ["/GALERIA1.png", "/GALERIA2.png"],
-    links: [
-      {
-        label: "GitHub",
-        href: "https://github.com/ricardoVeloso2424/Galeria-Lelo",
-        primary: false,
-      },
-    ],
-  },
-  {
-    title: "Conversor",
-    description:
-      "Python desktop application for converting image and video assets with reusable presets for resolution, aspect ratio, and quality. Integrates FFmpeg processing with a Tkinter UI and PyInstaller packaging for desktop distribution.",
-    tags: ["Python", "Tkinter", "FFmpeg", "imageio-ffmpeg", "Pillow", "PyInstaller"],
-    images: ["/conversor.png"],
-    links: [
-      {
-        label: "GitHub",
-        href: "https://github.com/ricardoVeloso2424/Converter",
-        primary: false,
-      },
-    ],
-  },
-];
-
-const navItems = [
-  ["about", "About"],
-  ["skills", "Skills"],
-  ["projects", "Projects"],
-  ["contact", "Contact"],
-] as const;
-
-type SectionId = "about" | "skills" | "projects" | "contact";
-type Project = (typeof projects)[number];
-
-const EASE_PREMIUM = [0.16, 1, 0.3, 1] as const;
-const DURATION_HOVER = 0.3;
-const DURATION_REVEAL = 0.56;
-const DURATION_HERO = 0.82;
-
-const TRANSITION_HOVER = { duration: DURATION_HOVER, ease: EASE_PREMIUM };
-const TRANSITION_REVEAL = { duration: DURATION_REVEAL, ease: EASE_PREMIUM };
-const TRANSITION_HERO = { duration: DURATION_HERO, ease: EASE_PREMIUM };
-
-function ExternalLink({
-  href,
-  children,
-  className,
-}: {
-  href: string;
-  children: ReactNode;
-  className: string;
-}) {
-  return (
-    <a href={href} target="_blank" rel="noreferrer noopener" className={className}>
-      {children}
-    </a>
-  );
-}
-
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <div className="flex items-center gap-4">
-      <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h2>
-      <div className="h-px flex-1 bg-gradient-to-r from-slate-300 via-slate-200 to-transparent" />
-    </div>
-  );
-}
-
-const ProjectCard = memo(function ProjectCard({
-  project,
-  motionReduced,
-}: {
-  project: Project;
-  motionReduced: boolean;
-}) {
-  const cardHoverClass = motionReduced
-    ? ""
-    : "transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:scale-[1.006]";
-
-  const revealMotion = motionReduced
-    ? {}
-    : {
-        initial: { opacity: 0, y: 18, scale: 0.995 },
-        whileInView: { opacity: 1, y: 0, scale: 1 },
-        transition: TRANSITION_REVEAL,
-        viewport: { once: true, amount: 0.23 },
-      };
-
-  return (
-    <motion.div
-      {...revealMotion}
-      className={`group relative overflow-hidden rounded-[1.85rem] border border-white/85 bg-white/80 p-6 shadow-[0_30px_90px_-45px_rgba(15,23,42,0.6)] backdrop-blur-sm sm:p-7 ${cardHoverClass}`}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-400/10 via-transparent to-emerald-400/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      <div className="pointer-events-none absolute left-7 right-7 top-0 h-px bg-gradient-to-r from-transparent via-sky-400/50 to-transparent" />
-
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-2">
-          <h3 className="text-xl font-semibold tracking-tight text-slate-900">{project.title}</h3>
-          <p className="max-w-3xl leading-relaxed text-slate-700">{project.description}</p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {project.links.map((link) => (
-            <ExternalLink
-              key={link.href}
-              href={link.href}
-              className={
-                link.primary
-                  ? "group/link inline-flex items-center gap-2 rounded-xl border border-slate-900 bg-slate-900 px-3.5 py-1.5 text-sm font-medium text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
-                  : "group/link inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-800 shadow-[0_10px_25px_-18px_rgba(15,23,42,0.8)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
-              }
-            >
-              <span>{link.label}</span>
-              <span
-                aria-hidden
-                className={
-                  motionReduced
-                    ? ""
-                    : "transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/link:translate-x-0.5"
-                }
-              >
-                -&gt;
-              </span>
-            </ExternalLink>
-          ))}
-        </div>
-      </div>
-
-      <div className="relative flex flex-wrap gap-2 pt-4">
-        {project.tags.map((tag) => (
-          <span
-            key={tag}
-            className={
-              motionReduced
-                ? "rounded-full border border-slate-200 bg-slate-50/90 px-2.5 py-1 text-sm text-slate-700"
-                : "rounded-full border border-slate-200 bg-slate-50/90 px-2.5 py-1 text-sm text-slate-700 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
-            }
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-
-      <div className="relative grid grid-cols-1 gap-4 pt-5 sm:grid-cols-2">
-        {project.images.map((src) => (
-          <div
-            key={src}
-            className={
-              motionReduced
-                ? "group/image relative aspect-video overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50/90 p-2"
-                : "group/image relative aspect-video overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50/90 p-2 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.006]"
-            }
-          >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-sky-500/0 via-sky-500/10 to-emerald-500/20 opacity-0 transition-opacity duration-300 group-hover/image:opacity-100" />
-            <div
-              className={
-                motionReduced
-                  ? "pointer-events-none absolute inset-0 rounded-2xl opacity-0"
-                  : "pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/45 to-white/0 opacity-0 -translate-x-[115%] transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/image:translate-x-[125%] group-hover/image:opacity-80"
-              }
-            />
-
-            <div
-              className={
-                motionReduced
-                  ? "relative h-full w-full overflow-hidden rounded-xl border border-slate-100 bg-white/95"
-                  : "relative h-full w-full overflow-hidden rounded-xl border border-slate-100 bg-white/95 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/image:scale-[1.015]"
-              }
-            >
-              <Image
-                src={src}
-                alt={`${project.title} screenshot`}
-                fill
-                sizes="(max-width: 640px) 100vw, 50vw"
-                className="object-contain"
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  );
-});
+type MotionSectionProps = Partial<ComponentProps<typeof motion.section>>;
 
 export default function Portfolio() {
   const prefersReducedMotion = useReducedMotion();
@@ -260,6 +33,7 @@ export default function Portfolio() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const ACTIVE_SECTION_OFFSET = 124;
     const targets: Array<{ id: SectionId; el: HTMLElement | null }> = [
       { id: "about", el: aboutRef.current },
       { id: "skills", el: skillsRef.current },
@@ -267,39 +41,48 @@ export default function Portfolio() {
       { id: "contact", el: contactRef.current },
     ];
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    const updateActiveSection = () => {
+      let current: SectionId = "about";
 
-        if (!visible) return;
+      for (const target of targets) {
+        if (!target.el) continue;
 
-        const found = targets.find((target) => target.el === visible.target);
-        if (found) {
-          setActive((current) => (current === found.id ? current : found.id));
+        if (target.el.getBoundingClientRect().top <= ACTIVE_SECTION_OFFSET) {
+          current = target.id;
+        } else {
+          break;
         }
-      },
-      { root: null, threshold: [0.2, 0.33, 0.5], rootMargin: "-12% 0px -45% 0px" }
-    );
+      }
 
-    targets.forEach((target) => target.el && io.observe(target.el));
-    return () => io.disconnect();
+      setActive((prev) => (prev === current ? prev : current));
+    };
+
+    let rafId: number | null = null;
+    const onScroll = () => {
+      if (rafId !== null) return;
+
+      rafId = window.requestAnimationFrame(() => {
+        updateActiveSection();
+        rafId = null;
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    updateActiveSection();
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+    };
   }, []);
 
-  const revealMotion = motionReduced
+  const revealMotion: MotionSectionProps = motionReduced
     ? {}
     : {
-        initial: {
-          opacity: 0,
-          y: 16,
-          scale: 0.996,
-        },
-        whileInView: {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-        },
+        initial: { opacity: 0, y: 16, scale: 0.996 },
+        whileInView: { opacity: 1, y: 0, scale: 1 },
         transition: TRANSITION_REVEAL,
         viewport: { once: true, amount: 0.24 },
       };
@@ -352,7 +135,7 @@ export default function Portfolio() {
             <div className="flex items-center justify-between gap-3">
               <button
                 onClick={() => scrollTo("about")}
-                className="rounded-xl px-3 py-2 text-sm font-semibold tracking-tight text-slate-800 transition hover:bg-slate-100/70"
+                className="rounded-xl px-3 py-2 text-sm font-semibold tracking-tight text-slate-800 transition hover:bg-slate-100/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
               >
                 Ricardo Veloso
               </button>
@@ -364,8 +147,8 @@ export default function Portfolio() {
                     onClick={() => scrollTo(id)}
                     className={
                       motionReduced
-                        ? "group relative rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-900"
-                        : "group relative rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99] hover:text-slate-900"
+                        ? "group relative rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+                        : "group relative rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99] hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
                     }
                   >
                     <span className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-r from-sky-100/60 via-white/80 to-emerald-100/60 opacity-0 transition-opacity duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-90" />
@@ -420,9 +203,7 @@ export default function Portfolio() {
 
               <div className="mt-5 h-px w-full max-w-sm origin-left bg-gradient-to-r from-sky-500/80 via-emerald-500/35 to-transparent" />
 
-              <p className="mt-4 text-xl text-slate-600">
-                Full Stack Developer
-              </p>
+              <p className="mt-4 text-xl text-slate-600">Full Stack Developer</p>
 
               <p className="mt-5 max-w-2xl text-[1.03rem] leading-relaxed text-slate-600">
                 Backend-focused full-stack developer building maintainable web applications.
@@ -430,12 +211,14 @@ export default function Portfolio() {
               </p>
 
               <div className="mt-7 flex flex-wrap gap-3">
-                <ExternalLink
+                <a
                   href="https://www.linkedin.com/in/ricardoveloso24/"
+                  target="_blank"
+                  rel="noreferrer noopener"
                   className={
                     motionReduced
-                      ? "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)]"
-                      : "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
+                      ? "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+                      : "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
                   }
                 >
                   <span>LinkedIn</span>
@@ -449,14 +232,16 @@ export default function Portfolio() {
                   >
                     -&gt;
                   </span>
-                </ExternalLink>
+                </a>
 
-                <ExternalLink
+                <a
                   href="https://github.com/ricardoVeloso2424"
+                  target="_blank"
+                  rel="noreferrer noopener"
                   className={
                     motionReduced
-                      ? "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)]"
-                      : "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
+                      ? "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+                      : "group/cta inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.6)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
                   }
                 >
                   <span>GitHub</span>
@@ -470,14 +255,14 @@ export default function Portfolio() {
                   >
                     -&gt;
                   </span>
-                </ExternalLink>
+                </a>
 
-                <ExternalLink
+                <a
                   href="/CVRicardoVeloso.pdf"
                   className={
                     motionReduced
-                      ? "group/cta inline-flex items-center gap-2 rounded-xl border border-sky-700 bg-sky-700 px-4 py-2.5 text-sm font-medium text-white shadow-[0_18px_34px_-22px_rgba(15,23,42,0.8)]"
-                      : "group/cta inline-flex items-center gap-2 rounded-xl border border-sky-700 bg-sky-700 px-4 py-2.5 text-sm font-medium text-white shadow-[0_18px_34px_-22px_rgba(15,23,42,0.8)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]"
+                      ? "group/cta inline-flex items-center gap-2 rounded-xl border border-sky-700 bg-sky-700 px-4 py-2.5 text-sm font-medium text-white shadow-[0_18px_34px_-22px_rgba(15,23,42,0.8)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+                      : "group/cta inline-flex items-center gap-2 rounded-xl border border-sky-700 bg-sky-700 px-4 py-2.5 text-sm font-medium text-white shadow-[0_18px_34px_-22px_rgba(15,23,42,0.8)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
                   }
                 >
                   <span>Resume</span>
@@ -491,7 +276,7 @@ export default function Portfolio() {
                   >
                     -&gt;
                   </span>
-                </ExternalLink>
+                </a>
               </div>
 
               <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -499,32 +284,31 @@ export default function Portfolio() {
                   { k: "Currently", v: "LKCOM (Laravel + Livewire CMS)" },
                   { k: "Focus", v: "Backend + clean architecture" },
                   { k: "Also", v: "Python desktop tools" },
-                ].map((x) => (
+                ].map((item) => (
                   <div
-                    key={x.k}
+                    key={item.k}
                     className={
                       motionReduced
                         ? "rounded-2xl border border-white/90 bg-white/90 p-4 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.65)]"
                         : "rounded-2xl border border-white/90 bg-white/90 p-4 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.65)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
                     }
                   >
-                    <p className="text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-slate-500">{x.k}</p>
-                    <p className="mt-1.5 text-sm font-semibold text-slate-900">{x.v}</p>
+                    <p className="text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-slate-500">
+                      {item.k}
+                    </p>
+                    <p className="mt-1.5 text-sm font-semibold text-slate-900">{item.v}</p>
                   </div>
                 ))}
               </div>
             </motion.div>
 
-            <motion.div
-              {...heroRightMotion}
-              className="relative mx-auto w-full max-w-[20rem]"
-            >
+            <motion.div {...heroRightMotion} className="relative mx-auto w-full max-w-[20rem]">
               <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-sky-300/40 via-cyan-300/20 to-emerald-300/30 blur-2xl" />
 
               <div className="relative overflow-hidden rounded-[2rem] border border-white/85 bg-white/80 p-4 shadow-[0_35px_85px_-40px_rgba(15,23,42,0.75)] backdrop-blur-xl">
                 <div className="relative aspect-square overflow-hidden rounded-[1.4rem] border border-slate-200/70 bg-slate-100">
                   <Image
-                    src="/A1A1A1.png"
+                    src="/A1A1A1.webp"
                     alt="Ricardo Veloso"
                     fill
                     sizes="(max-width: 1024px) 320px, 360px"
@@ -538,117 +322,27 @@ export default function Portfolio() {
           </div>
         </motion.section>
 
-        <motion.section
-          ref={aboutRef}
-          {...revealMotion}
-          className="mt-10 space-y-4 scroll-mt-28"
-        >
-          <SectionHeader title="About" />
+        <AboutSection sectionRef={aboutRef} revealMotion={revealMotion} motionReduced={motionReduced} />
 
-          <div className="rounded-[1.8rem] border border-white/85 bg-white/78 p-6 shadow-[0_25px_70px_-35px_rgba(15,23,42,0.55)] backdrop-blur-sm sm:p-7">
-            <p className="max-w-3xl text-[1.01rem] leading-relaxed text-slate-700">
-              Full Stack Developer with hands-on experience in building web applications across backend and frontend.
-              Completed the Code for All_ Full-Stack Bootcamp and currently working as a Software Developer at LKCOM,
-              contributing to a modular Laravel + Livewire CMS used in production. Strong background in Java,
-              JavaScript, SQL and web technologies, with an engineering mindset shaped by an ongoing degree in
-              Informatics Engineering.
-            </p>
+        <SkillsSection
+          sectionRef={skillsRef}
+          revealMotion={revealMotion}
+          motionReduced={motionReduced}
+          skills={skills}
+        />
 
-            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {[
-                { title: "Backend", text: "Java/Spring, SQL, clean data models, REST APIs." },
-                { title: "Frontend", text: "React/Next.js with TypeScript, pragmatic UI." },
-                { title: "Delivery", text: "Git workflows, production debugging, maintainability." },
-              ].map((b) => (
-                <div
-                  key={b.title}
-                  className={
-                    motionReduced
-                      ? "rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.6)]"
-                      : "rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.6)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
-                  }
-                >
-                  <p className="text-sm font-semibold text-slate-900">{b.title}</p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{b.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.section>
+        <ProjectsSection
+          sectionRef={projectsRef}
+          revealMotion={revealMotion}
+          motionReduced={motionReduced}
+          projects={projects}
+        />
 
-        <motion.section
-          ref={skillsRef}
-          {...revealMotion}
-          className="mt-10 space-y-5 scroll-mt-28"
-        >
-          <SectionHeader title="Skills" />
+        <ContactSection sectionRef={contactRef} revealMotion={revealMotion} />
 
-          <div className="rounded-[1.8rem] border border-white/85 bg-white/78 p-6 shadow-[0_25px_70px_-35px_rgba(15,23,42,0.55)] backdrop-blur-sm sm:p-7">
-            <div className="flex flex-wrap gap-2.5">
-              {skills.map((skill) => (
-                <span
-                  key={skill}
-                  className={
-                    motionReduced
-                      ? "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-700 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.65)]"
-                      : "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-700 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.65)] transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
-                  }
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-sky-500 to-emerald-500" />
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-        </motion.section>
-
-        <motion.section
-          ref={projectsRef}
-          {...revealMotion}
-          className="mt-10 space-y-8 scroll-mt-28"
-        >
-          <SectionHeader title="Projects" />
-
-          <div className="space-y-6">
-            {projects.map((project) => (
-              <ProjectCard key={project.title} project={project} motionReduced={motionReduced} />
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section
-          ref={contactRef}
-          {...revealMotion}
-          className="mt-10 space-y-4 scroll-mt-28"
-        >
-          <SectionHeader title="Contact" />
-
-          <div className="rounded-[1.8rem] border border-white/85 bg-white/80 p-6 shadow-[0_30px_80px_-42px_rgba(15,23,42,0.65)] backdrop-blur-sm">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <p className="text-slate-700">
-                Email:{" "}
-                <a
-                  href="mailto:cfaricardov@hotmail.com"
-                  className="font-medium underline decoration-slate-300 underline-offset-4 transition hover:text-slate-900"
-                >
-                  cfaricardov@hotmail.com
-                </a>
-              </p>
-
-              <p className="text-slate-700 sm:text-right">
-                Phone:{" "}
-                <a
-                  href="tel:+351960125103"
-                  className="font-medium underline decoration-slate-300 underline-offset-4 transition hover:text-slate-900"
-                >
-                  +351 960 125 103
-                </a>
-              </p>
-            </div>
-          </div>
-        </motion.section>
-
-        <footer className="mt-10 border-t border-slate-200/80 pt-7 text-sm text-slate-500">Ricardo Veloso</footer>
+        <footer className="mt-10 border-t border-slate-200/80 pt-7 text-sm text-slate-500">
+          Ricardo Veloso
+        </footer>
       </div>
     </main>
   );
