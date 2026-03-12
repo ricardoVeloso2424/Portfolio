@@ -27,7 +27,7 @@ const projects = [
     links: [
       {
         label: "GitHub",
-        href: "PUT_REPOSITORY_LINK_HERE",
+        href: "https://github.com/ricardoVeloso2424/maquivelosoV2",
         primary: false,
       },
     ],
@@ -39,11 +39,6 @@ const projects = [
     tags: ["Java", "Spring Boot", "PostgreSQL", "Spring AI"],
     images: ["/TLDR1.jpg", "/TLDR2.jpg"],
     links: [
-      {
-        label: "Live",
-        href: "http://ec2-13-53-174-58.eu-north-1.compute.amazonaws.com/",
-        primary: true,
-      },
       {
         label: "GitHub",
         href: "https://github.com/ricardoVeloso2424/RFP-AI-Response",
@@ -74,7 +69,7 @@ const projects = [
     links: [
       {
         label: "GitHub",
-        href: "PUT_YOUR_REPO_LINK_HERE",
+        href: "https://github.com/ricardoVeloso2424/Converter",
         primary: false,
       },
     ],
