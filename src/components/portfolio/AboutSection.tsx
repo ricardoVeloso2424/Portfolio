@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { ComponentProps, RefObject } from "react";
+import type { RefObject } from "react";
+import { reveal } from "@/lib/motion";
+import { useAnimationsEnabled } from "@/lib/useAnimationsEnabled";
 import SectionHeader from "./SectionHeader";
-
-type MotionSectionProps = Partial<ComponentProps<typeof motion.section>>;
+import SpotlightCard from "./SpotlightCard";
 
 const highlights = [
   { title: "Backend", text: "Java/Spring, SQL, clean data models, REST APIs." },
@@ -14,42 +15,44 @@ const highlights = [
 
 export default function AboutSection({
   sectionRef,
-  revealMotion,
-  motionReduced,
 }: {
   sectionRef: RefObject<HTMLElement | null>;
-  revealMotion: MotionSectionProps;
-  motionReduced: boolean;
 }) {
+  const animated = useAnimationsEnabled();
+
   return (
-    <motion.section ref={sectionRef} {...revealMotion} className="mt-10 space-y-4 scroll-mt-28">
-      <SectionHeader title="About" />
+    <section id="about" ref={sectionRef} className="mt-24 scroll-mt-28 sm:mt-32">
+      <motion.div {...reveal(animated)}>
+        <SectionHeader index="01" title="About" />
 
-      <div className="rounded-[1.8rem] border border-white/85 bg-white/78 p-6 shadow-[0_25px_70px_-35px_rgba(15,23,42,0.55)] backdrop-blur-sm sm:p-7">
-        <p className="max-w-3xl text-[1.01rem] leading-relaxed text-slate-700">
-          Full Stack Developer with hands-on experience building web applications across backend and
-          frontend. Completed the Code for All Full-Stack Bootcamp and currently working as a Software
-          Developer at LKCOM, contributing to a modular Laravel + Livewire CMS used in production.
-          Strong background in Java, JavaScript, SQL, and web technologies, with an engineering
-          mindset shaped by an ongoing degree in Informatics Engineering.
-        </p>
+        <SpotlightCard className="rounded-3xl border border-white/[0.08] bg-white/[0.02] p-6 sm:p-9">
+          <p className="max-w-3xl text-base leading-relaxed text-slate-300 sm:text-lg">
+            Full Stack Developer with hands-on experience building web applications across backend and
+            frontend. Completed the Code for All Full-Stack Bootcamp and currently working as a Software
+            Developer at LKCOM, contributing to a modular Laravel + Livewire CMS used in production.
+            Strong background in Java, JavaScript, SQL, and web technologies, with an engineering
+            mindset shaped by an ongoing degree in Informatics Engineering.
+          </p>
 
-        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {highlights.map((item) => (
-            <div
-              key={item.title}
-              className={
-                motionReduced
-                  ? "rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.6)]"
-                  : "rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.6)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5"
-              }
-            >
-              <p className="text-sm font-semibold text-slate-900">{item.title}</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{item.text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </motion.section>
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {highlights.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 transition-colors hover:border-cyan-400/25 hover:bg-white/[0.04]"
+              >
+                <p className="flex items-center gap-2 text-sm font-semibold text-slate-100">
+                  <span
+                    aria-hidden
+                    className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-400"
+                  />
+                  {item.title}
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </SpotlightCard>
+      </motion.div>
+    </section>
   );
 }

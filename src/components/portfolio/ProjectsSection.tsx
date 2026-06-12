@@ -1,33 +1,33 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { ComponentProps, RefObject } from "react";
+import type { RefObject } from "react";
 import type { Project } from "@/data/portfolio";
+import { reveal } from "@/lib/motion";
+import { useAnimationsEnabled } from "@/lib/useAnimationsEnabled";
 import ProjectCard from "./ProjectCard";
 import SectionHeader from "./SectionHeader";
 
-type MotionSectionProps = Partial<ComponentProps<typeof motion.section>>;
-
 export default function ProjectsSection({
   sectionRef,
-  revealMotion,
-  motionReduced,
   projects,
 }: {
   sectionRef: RefObject<HTMLElement | null>;
-  revealMotion: MotionSectionProps;
-  motionReduced: boolean;
   projects: Project[];
 }) {
-  return (
-    <motion.section ref={sectionRef} {...revealMotion} className="mt-10 space-y-8 scroll-mt-28">
-      <SectionHeader title="Projects" />
+  const animated = useAnimationsEnabled();
 
-      <div className="space-y-6">
-        {projects.map((project) => (
-          <ProjectCard key={project.title} project={project} motionReduced={motionReduced} />
+  return (
+    <section id="projects" ref={sectionRef} className="mt-24 scroll-mt-28 sm:mt-32">
+      <motion.div {...reveal(animated)}>
+        <SectionHeader index="03" title="Projects" />
+      </motion.div>
+
+      <div className="space-y-7 sm:space-y-9">
+        {projects.map((project, index) => (
+          <ProjectCard key={project.title} project={project} index={index} />
         ))}
       </div>
-    </motion.section>
+    </section>
   );
 }

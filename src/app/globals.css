@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+}
+
 :root {
-  --background: #eef3fa;
-  --foreground: #0f172a;
+  --background: #04070d;
+  --foreground: #e6edf6;
+}
+
+html {
+  color-scheme: dark;
 }
 
 html,
@@ -15,8 +24,9 @@ body {
   min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -24,11 +34,98 @@ a {
 }
 
 :where(a, button):focus-visible {
-  outline: 2px solid rgba(14, 165, 233, 0.85);
-  outline-offset: 2px;
+  outline: 2px solid rgba(34, 211, 238, 0.9);
+  outline-offset: 3px;
 }
 
 ::selection {
-  background: rgba(14, 165, 233, 0.22);
-  color: #0f172a;
+  background: rgba(34, 211, 238, 0.28);
+  color: #f8fafc;
+}
+
+@media (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #04070d;
+  }
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid #04070d;
+    border-radius: 999px;
+    background: #1d2a3d;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2b3d58;
+  }
+}
+
+/* Hero entrance is CSS-only so above-the-fold content stays visible without JavaScript */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.rise-delay-1 {
+  animation-delay: 0.07s;
+}
+.rise-delay-2 {
+  animation-delay: 0.14s;
+}
+.rise-delay-3 {
+  animation-delay: 0.21s;
+}
+.rise-delay-4 {
+  animation-delay: 0.28s;
+}
+.rise-delay-5 {
+  animation-delay: 0.36s;
+}
+
+@keyframes aurora-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(5%, -4%, 0) scale(1.1);
+  }
+}
+
+@keyframes aurora-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.04);
+  }
+  50% {
+    transform: translate3d(-4%, 5%, 0) scale(0.96);
+  }
+}
+
+.aurora-a {
+  animation: aurora-a 24s ease-in-out infinite;
+}
+.aurora-b {
+  animation: aurora-b 30s ease-in-out infinite;
+}
+
+.noise {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='180'%20height='180'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.85'%20numOctaves='3'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in,
+  .aurora-a,
+  .aurora-b {
+    animation: none;
+  }
 }
