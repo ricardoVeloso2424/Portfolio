@@ -23,7 +23,7 @@ export default function ProjectsSection({
         <SectionHeader index="03" title="Projects" />
       </motion.div>
 
-      <div className="space-y-7 sm:space-y-9">
+      <div className="space-y-16 sm:space-y-24">
         {projects.map((project, index) => (
           <ProjectCard key={project.title} project={project} index={index} />
         ))}

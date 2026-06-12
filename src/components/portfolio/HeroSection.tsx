@@ -42,7 +42,7 @@ export default function HeroSection() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75 motion-reduce:animate-none" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
             </span>
-            Software Developer at LKCOM
+            Software Developer
           </span>
 
           <h1 className="rise-in rise-delay-1 mt-6 text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">
