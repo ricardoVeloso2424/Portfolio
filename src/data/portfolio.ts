@@ -52,10 +52,10 @@ export const projects: Project[] = [
       { src: "/projects/maquiveloso/frontend2.png", fullPage: true },
       { src: "/projects/maquiveloso/frontend3.png", fullPage: true },
       { src: "/projects/maquiveloso/frontend4.png", fullPage: true },
-      { src: "/projects/maquiveloso/backend1.png" },
-      { src: "/projects/maquiveloso/backend2.png" },
-      { src: "/projects/maquiveloso/backend3.png" },
-      { src: "/projects/maquiveloso/backend4.png" },
+      { src: "/projects/maquiveloso/backend1.png", fullPage: true },
+      { src: "/projects/maquiveloso/backend2.png", fullPage: true },
+      { src: "/projects/maquiveloso/backend3.png", fullPage: true },
+      { src: "/projects/maquiveloso/backend4.png", fullPage: true },
     ],
     links: [
       {
