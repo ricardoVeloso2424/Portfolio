@@ -46,13 +46,19 @@ export const projects: Project[] = [
     tags: ["Laravel", "Livewire", "Tailwind CSS", "Blade", "MySQL", "JavaScript"],
     media: "web",
     images: [
-      { src: "/projects/maquiveloso/screenshot-1.webp" },
-      { src: "/projects/maquiveloso/screenshot-2.webp" },
+      { src: "/projects/maquiveloso/frontend1.png" },
+      { src: "/projects/maquiveloso/frontend2.png" },
+      { src: "/projects/maquiveloso/frontend3.png" },
+      { src: "/projects/maquiveloso/frontend4.png" },
+      { src: "/projects/maquiveloso/backend1.png" },
+      { src: "/projects/maquiveloso/backend2.png" },
+      { src: "/projects/maquiveloso/backend3.png" },
+      { src: "/projects/maquiveloso/backend4.png" },
     ],
     links: [
       {
-        label: "GitHub",
-        href: "https://github.com/ricardoVeloso2424/maquivelosoV2",
+        label: "Live Site",
+        href: "https://www.maquiveloso.pt/",
         primary: false,
       },
     ],
