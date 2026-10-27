@@ -5,10 +5,12 @@ export default function BrowserFrame({
   src,
   alt,
   className,
+  fullPage = false,
 }: {
   src: string;
   alt: string;
   className?: string;
+  fullPage?: boolean;
 }) {
   return (
     <div
@@ -23,19 +25,36 @@ export default function BrowserFrame({
         <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
         <span className="ml-3 h-4 flex-1 rounded-md bg-white/[0.04]" />
       </div>
-      <div className="group/shot relative aspect-video overflow-hidden">
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          sizes="(max-width: 1024px) 92vw, 520px"
-          className="object-cover object-top transition-transform duration-500 ease-out motion-safe:group-hover/shot:scale-[1.04] motion-reduce:transition-none"
-        />
+      {fullPage ? (
         <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#04070d]/35 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover/shot:opacity-100"
-        />
-      </div>
+          tabIndex={0}
+          aria-label={`${alt} (scroll to see the full page)`}
+          className="relative aspect-video overflow-y-auto overscroll-contain [scrollbar-color:rgba(255,255,255,0.2)_transparent] [scrollbar-width:thin] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400/60"
+        >
+          <Image
+            src={src}
+            alt={alt}
+            width={0}
+            height={0}
+            sizes="(max-width: 1024px) 92vw, 520px"
+            className="block h-auto w-full"
+          />
+        </div>
+      ) : (
+        <div className="group/shot relative aspect-video overflow-hidden">
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            sizes="(max-width: 1024px) 92vw, 520px"
+            className="object-cover object-top transition-transform duration-500 ease-out motion-safe:group-hover/shot:scale-[1.04] motion-reduce:transition-none"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#04070d]/35 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover/shot:opacity-100"
+          />
+        </div>
+      )}
     </div>
   );
 }

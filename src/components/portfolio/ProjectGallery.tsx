@@ -41,13 +41,19 @@ export default function ProjectGallery({
   const safeIndex = Math.min(activeIndex, visible.length - 1);
   const current = visible[safeIndex] ?? visible[0];
 
-  const Frame = media === "mobile" ? PhoneFrame : BrowserFrame;
   const mainWrapClass = media === "mobile" ? "mx-auto w-full max-w-[200px]" : "";
   const thumbClass = media === "mobile" ? "aspect-[9/19.5] w-11" : "aspect-video w-20";
 
   const currentLabel = `${title} screenshot ${safeIndex + 1}${
     activeGroup ? ` — ${activeGroup} view` : ""
   }`;
+
+  const frame =
+    media === "mobile" ? (
+      <PhoneFrame src={current.src} alt={currentLabel} />
+    ) : (
+      <BrowserFrame src={current.src} alt={currentLabel} fullPage={current.fullPage} />
+    );
 
   return (
     <div>
@@ -91,10 +97,10 @@ export default function ProjectGallery({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.22 }}
           >
-            <Frame src={current.src} alt={currentLabel} />
+            {frame}
           </motion.div>
         ) : (
-          <Frame src={current.src} alt={currentLabel} />
+          frame
         )}
       </div>
 

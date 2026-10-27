@@ -11,6 +11,8 @@ export type ProjectImageGroup = "Parent" | "Child";
 export type ProjectImage = {
   src: string;
   group?: ProjectImageGroup;
+  // Tall full-page capture: scroll inside the frame instead of cropping.
+  fullPage?: boolean;
 };
 
 export type ProjectMedia = "web" | "mobile";
@@ -46,10 +48,10 @@ export const projects: Project[] = [
     tags: ["Laravel", "Livewire", "Tailwind CSS", "Blade", "MySQL", "JavaScript"],
     media: "web",
     images: [
-      { src: "/projects/maquiveloso/frontend1.png" },
-      { src: "/projects/maquiveloso/frontend2.png" },
-      { src: "/projects/maquiveloso/frontend3.png" },
-      { src: "/projects/maquiveloso/frontend4.png" },
+      { src: "/projects/maquiveloso/frontend1.png", fullPage: true },
+      { src: "/projects/maquiveloso/frontend2.png", fullPage: true },
+      { src: "/projects/maquiveloso/frontend3.png", fullPage: true },
+      { src: "/projects/maquiveloso/frontend4.png", fullPage: true },
       { src: "/projects/maquiveloso/backend1.png" },
       { src: "/projects/maquiveloso/backend2.png" },
       { src: "/projects/maquiveloso/backend3.png" },
